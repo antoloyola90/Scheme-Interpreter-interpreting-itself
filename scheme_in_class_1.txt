@@ -1,0 +1,118 @@
+~ (501\)% mzscheme
+Welcome to Racket v6.1.
+> ; basic types in Scheme include numbers, strings, and symbols
+0
+0
+> "this is a string"
+"this is a string"
+> 'hello
+hello
+> ;; the primary aggregate type is the list
+
+'(1 2 3 4)
+(1 2 3 4)
+> ;; lists can be nested
+'(1 2 (3 4) 5 6)   ; this has 5 elements, one of which is a list
+(1 2 (3 4) 5 6)
+> 
+
+; Scheme has variables
+
+(define x 5)
+> 
+; Scheme has functions
+
+(define (f x y)
+  (+ x y))
+> 
+;; function call
+
+(f 3 4)
+7
+> '(ben is teaching this class)  ;; this is a list of symbols
+(ben is teaching this class)
+> 
+;; conditionals can be expressed using (if..) or (cond ...)
+
+x
+5
+> (if (= x 3) 'yes 'no)
+no
+> (cond ((= x 3) "x is three")
+        ((= x (- 6 1)) 5)
+        (else 'I_DUNNO))
+5
+> 
+;; the quote, ', says do not evaluate this expression, treat it as data
+
+'(f 3 4)
+(f 3 4)
+> 
+
+
+;; list operations
+
+(list 3 4 5)   ; the list function constructs a list of its parameters
+(3 4 5)
+> (list '(+ 3 4) (+ 3 4))
+((+ 3 4) 7)
+> 
+;; (cons x L)  creates a new list whose first element is x and whose
+;; subsequent elements are the elements of the list L
+
+(cons 3 '(4 5 6))
+(3 4 5 6)
+> (cons '(6 7) '(8 9 10))
+((6 7) 8 9 10)
+> ;; the empty list is written '() and pronounced "nil"
+'()
+()
+> f
+#<procedure:f>
+> (list f f f f)
+(#<procedure:f> #<procedure:f> #<procedure:f> #<procedure:f>)
+> (list f f f f 3 4)
+(#<procedure:f> #<procedure:f> #<procedure:f> #<procedure:f> 3 4)
+> ;; defining a function that creates a list of numbers from START to END
+(define (listfromTo a b)
+  (cond ((= a b) (list a))
+        (else (cons a (listfromTo (+ a 1) b)))
+        ))
+> (nums 1 20)
+(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20)
+> 
+;; the first element of a list is accessed using CAR
+
+(car '(3 4 5 6))
+3
+> ;; Reminder CONS and CAR DO NOT CHANGE THEIR PARAMETERS (FUNCTIONAL LANGUAGE!)
+
+(define L '(1 2 3))
+> (cons 0 L)
+(0 1 2 3)
+> L
+(1 2 3)
+> (car L)
+1
+> L
+(1 2 3)
+> ;;; the rest of a list (after the first element) is access via CDR
+(cdr '(1 2 3 4))
+(2 3 4)
+
+> ;;; define a function that accesses the nth element of a list
+
+(define (nth n L)
+  (cond ((= n 1) (car L))
+        (else (nth (- n 1) (cdr L)))))
+> (nth 4 '(2 4 6 8 10 12))
+8
+> (nth 4 '(1 2 3))   ;; this will generate an error (attempting car on an empty list)
+car: contract violation
+  expected: pair?
+  given: ()
+  context...:
+   stdin::1563: nth
+   /Applications/Racket v6.1/collects/racket/private/misc.rkt:87:7
+> (exit)
+% 

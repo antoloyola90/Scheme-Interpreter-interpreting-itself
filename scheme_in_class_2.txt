@@ -1,0 +1,201 @@
+I> ;; the empty list: '()
+;; testing for '() using null?
+
+(null? '(1 2 3))
+#f
+
+> ;; computing the length of a list
+(define (len L)
+  (cond ((null? L) 0)
+        (else (+ 1 (len (cdr L))))))
+> (len '(1 2 3 4))
+4
+> (len '((1 2) 3 4))
+3
+> (pair? '(1 2))  ;; pair? returns true if its argument is a non-empty list
+#t
+
+> 
+;;; counting all the elements in a list, including within nested lists
+
+(define (nested-length L)
+  (cond ((null? L) 0)
+        ((pair? (car L)) (+ (nested-length (car L)) (nested-length (cdr L))))
+        (else (+ 1 (nested-length (cdr L))))
+        ))
+> (nested-length '((1 2) 3 4))
+4
+> (nested-length '(((((1 2) 3 (((4 5))) 6)) 7)))
+7
+
+
+> (list 1 2)   ;;means the same thing as (cons 1 (cons 2 '()))
+(1 2)
+> (cons 1 (cons 2 '()))
+(1 2)
+
+
+> ;;; APPEND creates a new list containing the elements of the two lists passed as parameters.
+
+(append '(1 2 3) '(4 5 6))
+(1 2 3 4 5 6)
+
+> ;; let's write it ourselves
+(define (app L1 L2)
+  (cond ((null? L1) L2)
+        (else (cons (car L1)  (app (cdr L1) L2)))
+        ))
+> (app '(1 2 3) '(4 5 6))
+(1 2 3 4 5 6)
+
+;; there is a built-in reverse procedure for creating a new list whose elements are
+;; the same as the provided list, but in reverse order.
+> (reverse '(1 2 3 4))
+(4 3 2 1)
+
+> ;; let's write our own
+
+(define (rev L)
+  (cond ((null? L) '())
+        (else (append (rev (cdr L)) (list (car L))))
+         ))
+> (cons '(1 2 3) '(4))
+((1 2 3) 4)
+> (rev '(1 2 3 4))
+(4 3 2 1)
+> (rev '(1 2 (3 4) 5))
+(5 (3 4) 2 1)
+
+;; Note that the complexity of the above rev function is O(N^2).  That's because
+;; the depth of the recursion of rev is N, where N is the size of the list to 
+;; be reversed, and for each call to rev, append is called.  Append is linear in
+;; the size of its first parameter, which in this case will be N-1 in the first call
+;; to rev, N-2 in the second call to rev, etc.  Thus, the total time will be
+;; proportion to (N-1) + (N-2) + ... = O(N^2)
+
+> 
+;; A linear time reverse using tail recursion.  A tail recursive function is
+;; one in which the recursive call is the last thing performed within the function.
+
+(define (new-rev L sofar)
+   (cond ((null? L) sofar)
+         (else (new-rev (cdr L) (cons (car L) sofar)))
+         ))
+
+> (new-rev '(1 2 (3 4) 5) '())
+(5 (3 4) 2 1)
+
+
+> ;;; output using DISPLAY  (performs a side-effect to the output)
+(display 3)
+3
+
+>  (newline) ; displays a carriage return
+
+> ;;; input using READ
+
+(define x (read))
+hello
+> x
+hello
+> (define y (read))
+(1 2 3 4)
+> y
+(1 2 3 4)
+
+
+> ;; MAP applies a function to every element of a list, returning a list of the results
+(define (f x) (+ x 3))
+> (map f '(2 4 6 8 10))
+(5 7 9 11 13)
+
+> ;; writing our own MAP
+(define (my-map f L)
+   (cond ((null? L) '())
+         (else (cons (f (car L)) (my-map f (cdr L))))))
+> (my-map f '(2 4 6 8 10))
+(5 7 9 11 13)
+
+
+>  ;;; lambda expressions are used to create a function without giving it a name
+
+(map (lambda (x) (* x 3)) '(1 2 3 4))
+(3 6 9 12)
+> (define g (lambda (a b) (+ a b)))
+> (g 3 4)
+7
+> ;; (define (g a b) (+ a b)) is just shorthand for (define g (lambda (a b) (+ a b)))
+
+
+;; defining a function using lambda and calling it:
+((lambda (x) (+ x 2)) 3)
+5
+
+;; Here's a function that returns another function.
+> (define (first x) (lambda (y) (+ x y)))
+> (first 5)
+#<procedure>
+> (define second (first 5))
+> second
+#<procedure>
+> (second 10)
+15
+
+
+> ;; LET introduces local variables
+
+(define (foo)
+  (let ((x 3)
+        (y (+ 7 4)))
+    (* x y)))
+> (foo)
+33
+> ;; let is just another expression
+
+(+ 3 (let ((y 7)) (+ y 1)))
+11
+> ;;; the scope of the variables introduced by LET is just the body of the LET.
+  ;;; None of the new variables are visible in the right-hand-side of the declarations.
+
+(let ((one 1)
+      (two (+ one 1)))
+  two)
+one: undefined;
+ cannot reference undefined identifier
+  context...:
+   /Applications/Racket v6.1/collects/racket/private/misc.rkt:87:7
+   /Applications/Racket v6.1/share/pkgs/r5rs-lib/r5rs/run.rkt: [running body]
+
+
+> ;;; a sequential version of LET is LET*.  Each new variable is visible in
+  ;;; the right-hand-side of subsequent declarations.
+
+(let* ((one 1)
+      (two (+ one 1)))
+  two)
+2
+
+> ;;; neither LET nor LET* let you define recursive functions, for that use LETREC
+
+(letrec ((fac (lambda (x) (if (= x 0) 1 (* x (fac (- x 1)))))))
+  (fac 6))
+720
+
+> ;; can have mutually recursive functions defined in a letrec
+
+(letrec ((f (lambda (x) (if (= x 0) 1 (* x (g (- x 1))))))
+             (g (lambda (y) (if (= y 0) 1 (* y (f (- y 1)))))))
+       (f 6))
+720
+
+> (letrec ((x 1) (y 2)) (+ x y))  ;; this works, but letrec is really for recursive functions
+3
+
+> ;;; ' is shorthand for (quote ...). When you type '(1 2 3), the system converts
+  ;;;  it to (quote (1 2 3))
+
+(define r (read))
+'(1 2 3)
+> r
+(quote (1 2 3))
+
